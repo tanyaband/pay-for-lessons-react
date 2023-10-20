@@ -1,21 +1,45 @@
 import { Day } from "./component";
 import { userStore } from "../../stores/user-store";
 import { observer } from "mobx-react";
-import { monthStore } from "../../stores/month-store";
-import { lessonStore } from "../../stores/lesson-store";
+import { eventStore } from "../../stores/event-store";
+import { useState } from "react";
+import { EventForm } from "../EventForm/component";
+import { createPortal } from "react-dom";
+import style from "./styles.module.css";
+import { EVENT_TYPES } from "../../constants/constants";
 
 export const DayContainer = observer(({ day }) => {
-  const lessons = lessonStore.getDayLessons(day);
+  const events = eventStore.monthEvents[day];
+  const [showModal, setShowModal] = useState();
+
   return (
-    <Day day={day}>
-      {lessons &&
-        lessons.map((item) => (
-          <div key={item}>
-            <span style={{ color: userStore.getUserById(item).color }}>
-              <i className="fa-regular fa-circle-check"></i>
-            </span>
-          </div>
-        ))}
-    </Day>
+    <>
+      <Day day={day} onClick={() => setShowModal(true)}>
+        <div className={style.events}>
+          {events &&
+            events.map((item, index) => (
+              <span
+                key={index}
+                style={{ color: userStore.getUserById(item.userId).color }}
+              >
+                <i className={EVENT_TYPES[item.type].icon}></i>
+              </span>
+            ))}
+        </div>
+      </Day>
+      {showModal &&
+        createPortal(
+          <EventForm
+            day={day}
+            onCancel={() => setShowModal(false)}
+            onOk={(newEvents) => {
+              eventStore.updateEvents(newEvents, day);
+              setShowModal(false);
+            }}
+            events={events}
+          />,
+          document.getElementById("modal-container")
+        )}
+    </>
   );
 });

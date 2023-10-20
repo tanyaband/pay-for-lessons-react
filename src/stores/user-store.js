@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, autorun, toJS } from "mobx";
+import { eventStore } from "./event-store";
 
 const savedUsers = JSON.parse(localStorage.getItem("pfl_users")) || [];
 
@@ -26,6 +27,15 @@ export const userStore = makeAutoObservable({
   },
 
   deleteUser(userId) {
+    if (eventStore.hasEvents(userId)) {
+      const result = confirm(
+        "Все события ученика будут удалены. Подтвердить удаление?"
+      );
+      if (!result) {
+        return;
+      }
+      eventStore.deleteUserEvents(userId);
+    }
     delete this.items[userId];
     this.ids.splice(this.ids.indexOf(userId), 1);
   },
@@ -33,4 +43,9 @@ export const userStore = makeAutoObservable({
   editUser(user) {
     this.items[user.id] = user;
   },
+});
+
+autorun(() => {
+  const users = Object.values(toJS(userStore.items));
+  localStorage.setItem("pfl_users", JSON.stringify(users));
 });

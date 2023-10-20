@@ -14,9 +14,9 @@ export const Month = ({ weeksNumber, getDate }) => {
         </tr>
       </thead>
       <tbody>
-        {[...Array(weeksNumber)].map((item, weekIndex) => (
+        {[...Array(weeksNumber)].map((_, weekIndex) => (
           <tr key={weekIndex}>
-            {DAYS.map((day, dayIndex) => (
+            {DAYS.map((_, dayIndex) => (
               <DayContainer
                 key={dayIndex}
                 day={getDate(weekIndex, dayIndex)}
